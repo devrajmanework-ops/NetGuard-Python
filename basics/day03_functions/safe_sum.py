@@ -11,3 +11,4 @@ def safe_sum(data):
 
 result = safe_sum(data)
 print("sum is:",result)
+
