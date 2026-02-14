@@ -55,6 +55,7 @@ def detect_bruteforce_time(data, threshold, window):
 
                 if seconds[-1] - seconds[0] <= window:
                     print(f"ALERT: {ip} brute force within {window} seconds")
+
 data = collect_failure_times("soc_logs.txt")
 
 detect_bruteforce_time(data, 3, 60)
