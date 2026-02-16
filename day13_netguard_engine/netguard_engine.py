@@ -109,6 +109,8 @@ def detect_bruteforce_count(ip_counts, threshold):
     
 
 def detect_bruteforce_time(data, threshold, window):
+    
+    fast_attack_ips = []
 
     for ip in data:
 
@@ -125,9 +127,10 @@ def detect_bruteforce_time(data, threshold, window):
 
             if seconds[i + threshold - 1] - seconds[i] <= window:
                     
-                    print(f"[ALERT] Fast brute force detected from {ip} within {window} seconds")
+                    fast_attack_ips.append(ip)
                     
                     break
+    return fast_attack_ips
 
 def generate_report(ip_counts, service_counts):
     max_ip = None
@@ -163,6 +166,19 @@ def generate_report(ip_counts, service_counts):
 
     print(f"unique attacking IPs: {unique_ips}")
 
+def calculate_severity(ip, ip_counts, fast_attack_ips):
+    count = ip_counts[ip]
+    if ip in fast_attack_ips:
+        return "CRITICAL"
+    
+    elif count >= 5:
+        return "HIGH"
+    
+    elif count >=3:
+        return "MEDIUM"
+    
+    else:
+        return "LOW"
 
 # Engine Execution
 
@@ -176,10 +192,15 @@ ip_counts = count_failures_by_ip(filename)
 
 service_counts = count_failures_by_service(filename)
 
+fast_attack_ips = detect_bruteforce_time(time_data,3,60)
 
-detect_bruteforce_count(ip_counts, 3)
+print("=== Threat Severity Report ===\n")
+for ip in ip_counts:
+    severity =calculate_severity(ip, ip_counts, fast_attack_ips)
 
-detect_bruteforce_time(time_data, 3, 60)
+    print(f"[{severity}] {ip} {ip_counts[ip]} failures")
+
+print("\n")
 
 
 generate_report(ip_counts, service_counts)
